@@ -6,10 +6,11 @@
 #include "Components/Button.h"
 
 
-void UMenuWidget::MenuSetup(int32 NumPublicConnections,FString MatchTyp)
+void UMenuWidget::MenuSetup(int32 NumPublicConnections,FString MatchTyp,FString lobbyPath)
 {
 	this->NumberPublicConnections = NumPublicConnections;
 	this->MatchType = MatchTyp;
+	PathToLobby = FString::Printf(TEXT("%s?listen"),*lobbyPath);
 	AddToViewport();
 	SetVisibility(ESlateVisibility::Visible);
 	bIsFocusable = true;
@@ -95,15 +96,18 @@ void UMenuWidget::OnCreateSession(bool bWasSuccessful)
 		UWorld * World = GetWorld();
 		if (World)
 		{
-			World->ServerTravel("/Game/ThirdPerson/Maps/LobbyLevel?listen");
+			World->ServerTravel(PathToLobby);
 		}
+	}
+	else
+	{
+		HostButton->SetIsEnabled(true);
 	}
 }
 
 void UMenuWidget::OnFindSession(const TArray<FOnlineSessionSearchResult>& SessionSearchResult, bool bWasSuccsseful)
 {
-	if (bWasSuccsseful)
-	{
+	
 		for (auto SessionResult : SessionSearchResult)
 		{
 			FString SettingsValue;
@@ -117,6 +121,10 @@ void UMenuWidget::OnFindSession(const TArray<FOnlineSessionSearchResult>& Sessio
 				}
 			}
 		}
+	
+	if (!bWasSuccsseful || SessionSearchResult.Num() == 0 )
+	{
+		JoinButton->SetIsEnabled(true);
 	}
 }
 
@@ -137,6 +145,10 @@ void UMenuWidget::OnJoinSession(EOnJoinSessionCompleteResult::Type Result)
 			}
 		}
 	}
+	if (Result != EOnJoinSessionCompleteResult::Success)
+	{
+		JoinButton->SetIsEnabled(true);
+	}
 }
 
 void UMenuWidget::OnDestroySession(bool bWasSuccsseful)
@@ -150,6 +162,7 @@ void UMenuWidget::OnStartSession(bool bWasSuccsseful)
 
 void UMenuWidget::HostButtonClicked()
 {
+	HostButton->SetIsEnabled(false);
 		// create session 
 		if (PlayerSessionSubSystem)
 		{
@@ -160,6 +173,7 @@ void UMenuWidget::HostButtonClicked()
 
 void UMenuWidget::JoinButtonClicked()
 {
+	JoinButton->SetIsEnabled(false);
 	if (PlayerSessionSubSystem)
 	{
 		PlayerSessionSubSystem->FindSession(10000);

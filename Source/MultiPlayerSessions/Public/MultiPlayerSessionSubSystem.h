@@ -74,5 +74,8 @@ private:
 	TSharedPtr<FOnlineSessionSettings>  SessionSettings;
 	TSharedPtr<FOnlineSessionSearch> SearchSettings;
 
+	bool bCreateSessionOnDestroy{false};
+	int32 LastNumPublicConnection;
+	FString LastMatchType;
 	
 };
