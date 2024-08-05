@@ -15,10 +15,11 @@ class MULTIPLAYERSESSIONS_API UMenuWidget : public UUserWidget
 	GENERATED_BODY()
 public:
 	UFUNCTION(BlueprintCallable)
-	void MenuSetup();
-
+	void MenuSetup(int32 NumPublicConnections = 8 ,FString MatchType = "FreeForAll" );
+    void MenuTearDown();
 protected:
 	virtual bool Initialize() override;
+	virtual void NativeDestruct() override;
 private:
 	// Host Button to bind to the host button in unreal engine
 	UPROPERTY(meta=(BindWidget))
@@ -38,4 +39,6 @@ private:
 
 	// Our SubSystem to handle the subsystem throw the menu Widget
 	class UMultiPlayerSessionSubSystem * PlayerSessionSubSystem;
+	int32 NumberPublicConnections{8};
+	FString MatchType{TEXT("FreeForAll")};
 };

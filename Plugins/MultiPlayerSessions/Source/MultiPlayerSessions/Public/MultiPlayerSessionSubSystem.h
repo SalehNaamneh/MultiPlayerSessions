@@ -52,5 +52,8 @@ private:
 	FDelegateHandle DestroySessionDelegateHandle;
 	FDelegateHandle StartSessionDelegateHandle;
 
+
+	TSharedPtr<FOnlineSessionSettings>  SessionSettings;
+
 	
 };

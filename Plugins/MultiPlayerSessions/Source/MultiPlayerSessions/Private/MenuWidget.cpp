@@ -4,8 +4,10 @@
 #include "Components/Button.h"
 
 
-void UMenuWidget::MenuSetup()
+void UMenuWidget::MenuSetup(int32 NumPublicConnections,FString MatchTyp)
 {
+	this->NumberPublicConnections = NumPublicConnections;
+	this->MatchType = MatchTyp;
 	AddToViewport();
 	SetVisibility(ESlateVisibility::Visible);
 	bIsFocusable = true;
@@ -30,6 +32,25 @@ void UMenuWidget::MenuSetup()
 	}
 }
 
+void UMenuWidget::MenuTearDown()
+{
+	RemoveFromViewport();
+	SetVisibility(ESlateVisibility::Hidden);
+	bIsFocusable = false;
+
+	UWorld *World = GetWorld();
+	if (World)
+	{
+		APlayerController * PlayerController = World->GetFirstPlayerController();
+		if (PlayerController)
+		{
+			FInputModeUIOnly InputModeData;
+			PlayerController->SetInputMode(InputModeData);
+			PlayerController->SetShowMouseCursor(false);
+		}
+	}
+}
+
 bool UMenuWidget::Initialize()
 {
 	// here bind the button with the call back function 
@@ -49,6 +70,13 @@ bool UMenuWidget::Initialize()
 	
 }
 
+void UMenuWidget::NativeDestruct()
+{
+	MenuTearDown();
+	Super::NativeDestruct();
+}
+
+
 void UMenuWidget::HostButtonClicked()
 {
 	if (GEngine)
@@ -57,7 +85,13 @@ void UMenuWidget::HostButtonClicked()
 		// create session 
 		if (PlayerSessionSubSystem)
 		{
-			PlayerSessionSubSystem->CreateSession(4,FString("FreeForAll"));
+			PlayerSessionSubSystem->CreateSession(NumberPublicConnections,MatchType);
+			// travel to the lobby
+			UWorld * World = GetWorld();
+			if (World)
+			{
+				World->ServerTravel("/Game/ThirdPerson/Maps/LobbyLevel?listen");
+			}
 		}
 	}
 }
