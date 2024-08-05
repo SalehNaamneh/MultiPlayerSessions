@@ -30,21 +30,21 @@ void UMenuWidget::MenuSetup(int32 NumPublicConnections,FString MatchTyp)
 	{
 		PlayerSessionSubSystem = GameInstance->GetSubsystem<UMultiPlayerSessionSubSystem>();
 	}
+
+	if (!IsValid(PlayerSessionSubSystem)) return;
+	PlayerSessionSubSystem->MultiPlayerOnCreateSessionComplete.AddDynamic(this,&ThisClass::UMenuWidget::OnCreateSession);
 }
 
 void UMenuWidget::MenuTearDown()
 {
-	RemoveFromViewport();
-	SetVisibility(ESlateVisibility::Hidden);
-	bIsFocusable = false;
-
-	UWorld *World = GetWorld();
+	RemoveFromParent();
+	UWorld* World = GetWorld();
 	if (World)
 	{
-		APlayerController * PlayerController = World->GetFirstPlayerController();
+		APlayerController* PlayerController = World->GetFirstPlayerController();
 		if (PlayerController)
 		{
-			FInputModeUIOnly InputModeData;
+			FInputModeGameOnly InputModeData;
 			PlayerController->SetInputMode(InputModeData);
 			PlayerController->SetShowMouseCursor(false);
 		}
@@ -76,24 +76,33 @@ void UMenuWidget::NativeDestruct()
 	Super::NativeDestruct();
 }
 
+// call back function
+void UMenuWidget::OnCreateSession(bool bWasSuccessful)
+{
+	if (bWasSuccessful)
+	{
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(-1,15.f,FColor::Green,FString("Create Session Successful"));
+		}
+		// travel to the lobby
+		UWorld * World = GetWorld();
+		if (World)
+		{
+			World->ServerTravel("/Game/ThirdPerson/Maps/LobbyLevel?listen");
+		}
+	}
+}
+
 
 void UMenuWidget::HostButtonClicked()
 {
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(-1,15.f,FColor::Blue,FString("Host Button"));
 		// create session 
 		if (PlayerSessionSubSystem)
 		{
 			PlayerSessionSubSystem->CreateSession(NumberPublicConnections,MatchType);
-			// travel to the lobby
-			UWorld * World = GetWorld();
-			if (World)
-			{
-				World->ServerTravel("/Game/ThirdPerson/Maps/LobbyLevel?listen");
-			}
+			
 		}
-	}
 }
 
 void UMenuWidget::JoinButtonClicked()

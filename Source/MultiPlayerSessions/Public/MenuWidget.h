@@ -20,6 +20,11 @@ public:
 protected:
 	virtual bool Initialize() override;
 	virtual void NativeDestruct() override;
+
+
+	/// call backs for custom delegates in menu sub system
+	UFUNCTION()
+	void OnCreateSession(bool bWasSuccessful);
 private:
 	// Host Button to bind to the host button in unreal engine
 	UPROPERTY(meta=(BindWidget))

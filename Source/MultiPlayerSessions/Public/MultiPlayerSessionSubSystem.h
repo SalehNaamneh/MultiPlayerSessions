@@ -10,6 +10,10 @@
 /**
  * 
  */
+
+/// custom Delegates
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMultiPlayerOnCreateSessionComplete,bool ,bWasSuccessful);
+
 UCLASS()
 class MULTIPLAYERSESSIONS_API UMultiPlayerSessionSubSystem : public UGameInstanceSubsystem
 
@@ -22,6 +26,12 @@ public:
 	void JoinSession(const FOnlineSessionSearchResult& SearchResult);
 	void DestroySession();
 	void StartSession();
+
+
+
+	// Custom delegate to bind to the call backs functions
+
+	FMultiPlayerOnCreateSessionComplete MultiPlayerOnCreateSessionComplete;
 protected:
 	// create callbacks func for every delegate
 	

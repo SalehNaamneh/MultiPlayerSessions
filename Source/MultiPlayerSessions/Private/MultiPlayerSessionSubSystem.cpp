@@ -3,7 +3,6 @@
 
 #include "OnlineSessionSettings.h"
 #include "OnlineSubsystem.h"
-#include "Chaos/ChaosPerfTest.h"
 
 UMultiPlayerSessionSubSystem::UMultiPlayerSessionSubSystem():
 CreateSessionCompleteDelegate(FOnCreateSessionCompleteDelegate::CreateUObject(this,&ThisClass::OnCreateSessionComplete)),
@@ -46,6 +45,9 @@ void UMultiPlayerSessionSubSystem::CreateSession(int32 NumPublicConnections, FSt
 	if (!OnlineSessionPtr->CreateSession(*LocalPlayer->GetPreferredUniqueNetId(),NAME_GameSession,*SessionSettings))
 	{
 		OnlineSessionPtr->ClearOnCreateSessionCompleteDelegate_Handle(CreateSessionDelegateHandle);
+
+		// BroadCast are own custom Delegate
+		MultiPlayerOnCreateSessionComplete.Broadcast(false);
 	}
 }
 
@@ -70,6 +72,11 @@ void UMultiPlayerSessionSubSystem::StartSession()
 // call backs function to the delegates 
 void UMultiPlayerSessionSubSystem::OnCreateSessionComplete(FName SessionName, bool bWasSuccessful)
 {
+	if (OnlineSessionPtr.IsValid())
+	{
+		OnlineSessionPtr->ClearOnCreateSessionCompleteDelegate_Handle(CreateSessionDelegateHandle);
+	}
+	MultiPlayerOnCreateSessionComplete.Broadcast(bWasSuccessful);
 }
 
 void UMultiPlayerSessionSubSystem::OnFindSessionComplete(bool bWasSuccessful)
