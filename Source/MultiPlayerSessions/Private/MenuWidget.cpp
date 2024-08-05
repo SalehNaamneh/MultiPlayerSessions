@@ -1,5 +1,7 @@
 
 #include "MenuWidget.h"
+
+#include "OnlineSessionSettings.h"
 #include "MultiPlayerSessions/Public/MultiPlayerSessionSubSystem.h"
 #include "Components/Button.h"
 
@@ -33,6 +35,10 @@ void UMenuWidget::MenuSetup(int32 NumPublicConnections,FString MatchTyp)
 
 	if (!IsValid(PlayerSessionSubSystem)) return;
 	PlayerSessionSubSystem->MultiPlayerOnCreateSessionComplete.AddDynamic(this,&ThisClass::UMenuWidget::OnCreateSession);
+	PlayerSessionSubSystem->MultiPlayerOnFindSessionComplete.AddUObject(this,&ThisClass::OnFindSession);
+	PlayerSessionSubSystem->MultiPlayerOnJoinSessionComplete.AddUObject(this,&ThisClass::OnJoinSession);
+	PlayerSessionSubSystem->MultiPlayerOnDestroySessionComplete.AddDynamic(this,&ThisClass::UMenuWidget::OnDestroySession);
+	PlayerSessionSubSystem->MultiPlayerOnStartSessionComplete.AddDynamic(this,&ThisClass::UMenuWidget::OnStartSession);
 }
 
 void UMenuWidget::MenuTearDown()
@@ -94,6 +100,53 @@ void UMenuWidget::OnCreateSession(bool bWasSuccessful)
 	}
 }
 
+void UMenuWidget::OnFindSession(const TArray<FOnlineSessionSearchResult>& SessionSearchResult, bool bWasSuccsseful)
+{
+	if (bWasSuccsseful)
+	{
+		for (auto SessionResult : SessionSearchResult)
+		{
+			FString SettingsValue;
+			SessionResult.Session.SessionSettings.Get(FName("MatchType"),SettingsValue);
+			if (SettingsValue == MatchType)
+			{
+				if (PlayerSessionSubSystem)
+				{
+					PlayerSessionSubSystem->JoinSession(SessionResult);
+					return;
+				}
+			}
+		}
+	}
+}
+
+void UMenuWidget::OnJoinSession(EOnJoinSessionCompleteResult::Type Result)
+{
+	IOnlineSubsystem * Subsystem = IOnlineSubsystem::Get();
+	if (Subsystem)
+	{
+		IOnlineSessionPtr Session = Subsystem->GetSessionInterface();
+		if (Session.IsValid())
+		{
+			FString Address;
+			Session->GetResolvedConnectString(NAME_GameSession,Address);
+			APlayerController *PlayerController = GetGameInstance()->GetFirstLocalPlayerController();
+			if (PlayerController)
+			{
+				PlayerController->ClientTravel(Address , TRAVEL_Absolute);
+			}
+		}
+	}
+}
+
+void UMenuWidget::OnDestroySession(bool bWasSuccsseful)
+{
+}
+
+void UMenuWidget::OnStartSession(bool bWasSuccsseful)
+{
+}
+
 
 void UMenuWidget::HostButtonClicked()
 {
@@ -107,6 +160,8 @@ void UMenuWidget::HostButtonClicked()
 
 void UMenuWidget::JoinButtonClicked()
 {
-	GEngine->AddOnScreenDebugMessage(-1,15.f,FColor::Red,FString("Join Button"));
-
+	if (PlayerSessionSubSystem)
+	{
+		PlayerSessionSubSystem->FindSession(10000);
+	}
 }

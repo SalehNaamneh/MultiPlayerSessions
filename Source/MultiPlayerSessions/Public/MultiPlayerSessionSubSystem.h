@@ -13,6 +13,10 @@
 
 /// custom Delegates
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMultiPlayerOnCreateSessionComplete,bool ,bWasSuccessful);
+DECLARE_MULTICAST_DELEGATE_TwoParams(FMultiPlayerOnFindSessionComplete , const TArray<FOnlineSessionSearchResult>& SessionSearchResult , bool bWasSuccsseful );
+DECLARE_MULTICAST_DELEGATE_OneParam(FMultiPlayerOnJoinSessionComplete , EOnJoinSessionCompleteResult::Type Result);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMultiPlayerOnDestroySessionComplete , bool , bWasSuccessful);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FMultiPlayerOnStartSessionComplete , bool , bWasSuccessful);
 
 UCLASS()
 class MULTIPLAYERSESSIONS_API UMultiPlayerSessionSubSystem : public UGameInstanceSubsystem
@@ -32,6 +36,10 @@ public:
 	// Custom delegate to bind to the call backs functions
 
 	FMultiPlayerOnCreateSessionComplete MultiPlayerOnCreateSessionComplete;
+	FMultiPlayerOnFindSessionComplete MultiPlayerOnFindSessionComplete;
+	FMultiPlayerOnJoinSessionComplete MultiPlayerOnJoinSessionComplete;
+	FMultiPlayerOnDestroySessionComplete MultiPlayerOnDestroySessionComplete;
+	FMultiPlayerOnStartSessionComplete MultiPlayerOnStartSessionComplete;
 protected:
 	// create callbacks func for every delegate
 	
@@ -64,6 +72,7 @@ private:
 
 
 	TSharedPtr<FOnlineSessionSettings>  SessionSettings;
+	TSharedPtr<FOnlineSessionSearch> SearchSettings;
 
 	
 };

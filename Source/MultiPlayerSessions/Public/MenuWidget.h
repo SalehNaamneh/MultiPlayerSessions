@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Interfaces/OnlineSessionInterface.h"
 #include "MenuWidget.generated.h"
 
 /**
@@ -25,6 +26,14 @@ protected:
 	/// call backs for custom delegates in menu sub system
 	UFUNCTION()
 	void OnCreateSession(bool bWasSuccessful);
+	void OnFindSession(const TArray<FOnlineSessionSearchResult>& SessionSearchResult , bool bWasSuccsseful);
+	void OnJoinSession(EOnJoinSessionCompleteResult::Type Result);
+	
+	UFUNCTION()
+	void OnDestroySession(bool bWasSuccsseful);
+	
+	UFUNCTION()
+	void OnStartSession(bool bWasSuccsseful);
 private:
 	// Host Button to bind to the host button in unreal engine
 	UPROPERTY(meta=(BindWidget))
